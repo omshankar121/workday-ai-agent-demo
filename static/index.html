@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workday AI HR Assistant</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --primary: #0066cc;
+    --primary-dark: #0052a3;
+    --primary-light: #e6f0ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --white: #ffffff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --gray-50: #111827;
+      --gray-100: #1f2937;
+      --gray-200: #374151;
+      --gray-300: #4b5563;
+      --gray-700: #d1d5db;
+      --gray-800: #e5e7eb;
+      --gray-900: #f9fafb;
+      --primary-light: #1e3a8a;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 800px;
+    height: 90vh;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 24px 20px;
+    text-align: center;
+    border-bottom: none;
+  }
+
+  header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  header p {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  .suggestions {
+    padding: 16px 20px;
+    background: var(--primary-light);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .suggestion-btn {
+    padding: 8px 12px;
+    background: var(--white);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .suggestion-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+  }
+
+  #chat::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+  }
+
+  .message-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .message-group.user {
+    align-items: flex-end;
+  }
+
+  .message-group.agent {
+    align-items: flex-start;
+  }
+
+  .bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    line-height: 1.5;
+    font-size: 14px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .message-group.user .bubble {
+    background: var(--primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .message-group.agent .bubble {
+    background: var(--gray-100);
+    color: var(--gray-900);
+    border-bottom-left-radius: 4px;
+  }
+
+  /* Markdown styling */
+  .message-group.agent .bubble strong {
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .message-group.agent .bubble em {
+    font-style: italic;
+  }
+
+  .message-group.agent .bubble code {
+    background: var(--gray-200);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", monospace;
+    font-size: 0.9em;
+  }
+
+  .message-group.agent .bubble ul,
+  .message-group.agent .bubble ol {
+    margin-left: 16px;
+    margin-top: 4px;
+  }
+
+  .message-group.agent .bubble li {
+    margin-bottom: 4px;
+  }
+
+  .message-group.agent .bubble h3 {
+    margin-top: 8px;
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+
+  .message-group.agent .bubble a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: var(--gray-100);
+    border-radius: 12px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gray-400);
+    animation: typing 1.4s infinite;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .trace {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .trace-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    font-weight: 500;
+    padding: 4px 0;
+    user-select: none;
+  }
+
+  .trace-toggle:hover {
+    text-decoration: underline;
+  }
+
+  .trace-toggle::before {
+    content: "▶";
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+
+  .trace-toggle.open::before {
+    transform: rotate(90deg);
+  }
+
+  .trace-content {
+    display: none;
+    margin-top: 8px;
+    padding: 12px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+  }
+
+  .trace-content.open {
+    display: block;
+    animation: slideIn 0.2s ease;
+  }
+
+  .trace-call {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: var(--white);
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .trace-call:last-child {
+    margin-bottom: 0;
+  }
+
+  .trace-call .name {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .trace-call .label {
+    color: var(--gray-700);
+    margin-right: 4px;
+  }
+
+  footer {
+    padding: 16px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 8px;
+  }
+
+  .input-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  #input {
+    flex: 1;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    background: var(--white);
+    color: var(--gray-900);
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  #input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  #send {
+    padding: 11px 20px;
+    border-radius: 10px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  #send:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  }
+
+  #send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--gray-700);
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--gray-900);
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    color: var(--gray-700);
+  }
+
+  @media (max-width: 600px) {
+    .bubble {
+      max-width: 90%;
+    }
+
+    header h1 {
+      font-size: 20px;
+    }
+
+    .suggestions {
+      flex-direction: column;
+    }
+
+    .suggestion-btn {
+      width: 100%;
+    }
+  }
+
+  .error-message {
+    background: #fee2e2;
+    border-left: 3px solid var(--danger);
+    color: #991b1b;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .error-message {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🚀 Workday AI HR Assistant</h1>
+    <p>Your intelligent HR companion</p>
+  </header>
+
+  <div class="suggestions">
+    <button class="suggestion-btn">📅 PTO Balance</button>
+    <button class="suggestion-btn">👥 Org Structure</button>
+    <button class="suggestion-btn">💰 Expenses</button>
+    <button class="suggestion-btn">📋 HR Policy</button>
+    <button class="suggestion-btn">✈️ Submit PTO</button>
+    <button class="suggestion-btn">📤 Submit Expense</button>
+    <button class="suggestion-btn">📞 Update Contact</button>
+  </div>
+
+  <div id="chat">
+    <div class="empty-state">
+      <div class="empty-state-icon">👋</div>
+      <h2>Welcome to HR Assistant</h2>
+      <p>Ask me about PTO, organizational structure, expenses, or company policy</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="input-wrapper">
+      <input id="input" type="text" placeholder="Ask anything about HR…" autocomplete="off">
+      <button id="send">Send</button>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.min.js"></script>
+<script>
+const chatEl = document.getElementById("chat");
+const inputEl = document.getElementById("input");
+const sendEl = document.getElementById("send");
+const suggestionBtns = document.querySelectorAll(".suggestion-btn");
+
+let hasConversation = false;
+
+const suggestions = {
+  "📅 PTO Balance": "How much PTO do I have left?",
+  "👥 Org Structure": "Who is my manager and who reports to me?",
+  "💰 Expenses": "What's the status of my recent expense reports?",
+  "📋 HR Policy": "What's the remote work policy?",
+  "✈️ Submit PTO": "I'm Priya and I want to submit PTO from September 15 to 19",
+  "📤 Submit Expense": "Submit a $500 conference expense for me",
+  "📞 Update Contact": "Update my phone number to +1-555-0100"
+};
+
+suggestionBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const query = suggestions[btn.textContent];
+    if (query) {
+      inputEl.value = query;
+      send();
+    }
+  });
+});
+
+function clearEmpty() {
+  if (!hasConversation && chatEl.querySelector(".empty-state")) {
+    chatEl.innerHTML = "";
+    hasConversation = true;
+  }
+}
+
+function addMessage(role, text) {
+  clearEmpty();
+  const group = document.createElement("div");
+  group.className = "message-group " + role;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  // Render markdown for agent messages, plain text for user messages
+  if (role === "agent" && typeof marked !== 'undefined') {
+    bubble.innerHTML = sanitizeHtml(marked.parse(text));
+  } else {
+    bubble.textContent = text;
+  }
+
+  group.appendChild(bubble);
+  chatEl.appendChild(group);
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  return group;
+}
+
+function sanitizeHtml(html) {
+  // Simple HTML sanitizer: only allow safe tags
+  const div = document.createElement("div");
+  div.innerHTML = html;
+
+  const allowedTags = new Set(["p", "br", "strong", "em", "code", "ul", "ol", "li", "h3", "a"]);
+  const allowedAttrs = new Set(["href", "target"]);
+
+  function sanitize(node) {
+    const nodesToRemove = [];
+    for (const child of node.children) {
+      if (!allowedTags.has(child.tagName.toLowerCase())) {
+        nodesToRemove.push(child);
+      } else {
+        for (const attr of child.attributes) {
+          if (!allowedAttrs.has(attr.name)) {
+            child.removeAttribute(attr.name);
+          }
+        }
+        sanitize(child);
+      }
+    }
+    nodesToRemove.forEach(n => n.remove());
+  }
+
+  sanitize(div);
+  return div.innerHTML;
+}
+
+function addTrace(messageGroup, trace) {
+  if (!trace || trace.length === 0) return;
+
+  const traceDiv = document.createElement("div");
+  traceDiv.className = "trace";
+
+  const toggle = document.createElement("div");
+  toggle.className = "trace-toggle";
+  toggle.textContent = `View ${trace.length} tool call${trace.length > 1 ? "s" : ""}`;
+
+  const content = document.createElement("div");
+  content.className = "trace-content";
+
+  toggle.addEventListener("click", () => {
+    toggle.classList.toggle("open");
+    content.classList.toggle("open");
+  });
+
+  for (const t of trace) {
+    const call = document.createElement("div");
+    call.className = "trace-call";
+    call.innerHTML = `<span class="name">${escapeHtml(t.name)}</span><span class="label">→</span><span>${escapeHtml(JSON.stringify(t.input))}</span>`;
+    content.appendChild(call);
+  }
+
+  traceDiv.appendChild(toggle);
+  traceDiv.appendChild(content);
+  messageGroup.appendChild(traceDiv);
+}
+
+function addTyping() {
+  clearEmpty();
+  const group = document.createElement("div");
+  group.className = "message-group agent";
+
+  const indicator = document.createElement("div");
+  indicator.className = "typing-indicator";
+
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("div");
+    dot.className = "typing-dot";
+    indicator.appendChild(dot);
+  }
+
+  group.appendChild(indicator);
+  group.id = "typing";
+  chatEl.appendChild(group);
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  return group;
+}
+
+function removeTyping() {
+  const typing = document.getElementById("typing");
+  if (typing) typing.remove();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function send() {
+  const text = inputEl.value.trim();
+  if (!text || sendEl.disabled) return;
+
+  inputEl.value = "";
+  sendEl.disabled = true;
+
+  addMessage("user", text);
+  const typingGroup = addTyping();
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text }),
+    });
+
+    if (!res.ok) {
+      removeTyping();
+      addMessage("agent", `Error: Server returned ${res.status}`);
+      throw new Error(`Server error ${res.status}`);
+    }
+
+    const data = await res.json();
+    removeTyping();
+    const messageGroup = addMessage("agent", data.reply);
+    addTrace(messageGroup, data.trace);
+  } catch (err) {
+    removeTyping();
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "error-message";
+    errorMsg.textContent = "⚠️ " + err.message;
+    chatEl.appendChild(errorMsg);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  } finally {
+    sendEl.disabled = false;
+    inputEl.focus();
+  }
+}
+
+sendEl.addEventListener("click", send);
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+});
+
+inputEl.focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+[
+  {
+    "employee_id": "E1001",
+    "name": "Priya Nair",
+    "department": "Engineering",
+    "title": "Software Engineer II",
+    "manager_id": "E1005",
+    "pto_balance_days": 12.5,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2031",
+        "description": "Team offsite travel",
+        "amount": 245.50,
+        "status": "Pending Manager Approval",
+        "submitted_on": "2026-08-28"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1002",
+    "name": "Daniel Kim",
+    "department": "Sales",
+    "title": "Account Executive",
+    "manager_id": "E1006",
+    "pto_balance_days": 4.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2018",
+        "description": "Client dinner",
+        "amount": 132.00,
+        "status": "Approved",
+        "submitted_on": "2026-08-15"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1003",
+    "name": "Sofia Torres",
+    "department": "Engineering",
+    "title": "Senior Software Engineer",
+    "manager_id": "E1005",
+    "pto_balance_days": 18.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1004",
+    "name": "Marcus Lee",
+    "department": "Finance",
+    "title": "Financial Analyst",
+    "manager_id": "E1006",
+    "pto_balance_days": 9.5,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2040",
+        "description": "Conference registration",
+        "amount": 899.00,
+        "status": "Rejected - Missing Receipt",
+        "submitted_on": "2026-09-01"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1005",
+    "name": "Alex Rivera",
+    "department": "Engineering",
+    "title": "Engineering Manager",
+    "manager_id": "E1007",
+    "pto_balance_days": 15.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1006",
+    "name": "Jamie Chen",
+    "department": "Sales",
+    "title": "Sales Manager",
+    "manager_id": "E1007",
+    "pto_balance_days": 20.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1007",
+    "name": "Taylor Brooks",
+    "department": "Executive",
+    "title": "VP of Operations",
+    "manager_id": null,
+    "pto_balance_days": 25.0,
+    "expense_reports": []
+  }
+]
