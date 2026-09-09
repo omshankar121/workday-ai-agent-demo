@@ -1,33 +1,67 @@
 """
-workday_api.py
+workday_api.py - Mock Workday API layer.
 
-Mock "Workday API" layer for the demo HR Assistant Agent.
-
-In a real deployment, the functions in this file would call Workday's actual
-REST API / RaaS (Report-as-a-Service) endpoints using OAuth 2.0 client
-credentials. Here they read from local JSON/Markdown files instead, so the
-project can run fully offline with no enterprise Workday access required.
-
-Swap the internals of these functions for real HTTP calls later without
-changing agent.py or tools.py at all -- that's the whole point of keeping
-this as a separate layer.
+For demo purposes, reads from local JSON. Can swap for real API later.
+See WORKDAY_API_INTEGRATION.md for details on integrating real Workday.
 """
 
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Configuration
+USE_REAL_API = os.getenv("USE_REAL_WORKDAY_API", "false").lower() == "true"
+WORKDAY_TENANT = os.getenv("WORKDAY_TENANT_URL", "")
+WORKDAY_CLIENT_ID = os.getenv("WORKDAY_CLIENT_ID", "")
+WORKDAY_CLIENT_SECRET = os.getenv("WORKDAY_CLIENT_SECRET", "")
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 EMPLOYEES_PATH = os.path.join(DATA_DIR, "employees.json")
 POLICY_PATH = os.path.join(DATA_DIR, "hr_policy.md")
 
+# Cache for Workday OAuth token
+_workday_token_cache = None
+
+
+# ============================================================================
+# WORKDAY API HELPER (Real API Integration)
+# ============================================================================
+
+def _get_workday_oauth_token():
+    """Get OAuth token from Workday API."""
+    global _workday_token_cache
+
+    if _workday_token_cache:
+        return _workday_token_cache
+
+    try:
+        import requests
+
+        token_url = f"{WORKDAY_TENANT}/api/v1/oauth2/token"
+        auth = (WORKDAY_CLIENT_ID, WORKDAY_CLIENT_SECRET)
+        data = {"grant_type": "client_credentials"}
+
+        response = requests.post(token_url, auth=auth, data=data)
+        response.raise_for_status()
+
+        token = response.json()["access_token"]
+        _workday_token_cache = token
+        return token
+    except Exception as e:
+        raise RuntimeError(f"Failed to get Workday token: {e}")
+
 
 def _load_employees():
+    """Load employees from mock data (local JSON)."""
     with open(EMPLOYEES_PATH, "r") as f:
         return json.load(f)
 
 
 def find_employee_by_name(name: str) -> dict:
-    """Case-insensitive partial-name lookup. Returns a match or an error dict."""
+    """Find employee by name (case-insensitive, partial match)."""
+    # Use mock data for demo
     employees = _load_employees()
     name_lower = name.lower().strip()
     matches = [e for e in employees if name_lower in e["name"].lower()]

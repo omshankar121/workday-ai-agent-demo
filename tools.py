@@ -1,13 +1,7 @@
 """
-tools.py
+tools.py - Tool definitions and dispatch table.
 
-Tool schema definitions (OpenAI-compatible function-calling format, which is
-what Groq's API speaks) and the dispatch table that maps a tool name to the
-actual Python function that implements it.
-
-No framework involved -- this is exactly what LangChain would normally
-hide from you. Keeping it explicit here so the agent loop in agent.py is
-easy to read end to end.
+Maps tool names to functions. Explicit format so you can see what's happening.
 """
 
 import workday_api
@@ -136,9 +130,7 @@ TOOL_DEFINITIONS = [
     },
 ]
 
-# Dispatch table: maps tool name (what the model says) to actual function (what we execute)
-# When the model returns tool_calls with name "get_pto_balance", we look it up here
-# and call the actual workday_api function with extracted parameters.
+# Maps tool names to functions - called when model wants to use a tool
 TOOL_FUNCTIONS = {
     "find_employee_by_name": lambda input: workday_api.find_employee_by_name(input["name"]),
     "get_pto_balance": lambda input: workday_api.get_pto_balance(input["employee_id"]),

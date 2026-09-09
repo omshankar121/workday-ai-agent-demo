@@ -1,14 +1,7 @@
 """
-server.py
+server.py - HTTP wrapper for the agent.
 
-HTTP wrapper around the tool-calling agent (agent.py).
-
-Design:
-- Agent loop (agent.py) is framework-agnostic and standalone
-- Server (this file) handles only HTTP concerns (rate limiting, CORS, errors)
-- They're completely separated — agent doesn't know about HTTP
-
-Could easily replace FastAPI with Flask/Django/etc without touching agent.py
+Keeps agent logic separate from HTTP stuff. Easy to swap FastAPI for Flask later.
 """
 
 import os
@@ -69,33 +62,16 @@ async def rate_limit_handler(request, exc):
 @app.post("/api/chat", response_model=ChatResponse)
 @limiter.limit(RATE_LIMIT)
 def chat(request: Request, req: ChatRequest):
-    """Chat endpoint: stateless request that runs the agent once.
-
-    Each request gets a fresh session with SYSTEM_PROMPT. The agent processes
-    the user message and returns a final answer (no conversation memory between
-    requests — that's a feature you'd add with a database).
-
-    Returns:
-    - session_id: unique ID for this request
-    - reply: agent's final answer
-    - trace: list of tool calls made (for UI visibility)
-    - timestamp: when response was generated
-    """
+    """Process a chat message through the agent."""
     try:
-        # Generate a unique session_id for this request (for logging/tracing)
         session_id = req.session_id or str(uuid.uuid4())
-
-        # Start fresh conversation with system prompt
-        # (In production with memory: would load previous messages from DB)
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
         logger.info(f"[{session_id}] User: {req.message[:50]}...")
 
-        # Add user message and run the agent loop
         messages.append({"role": "user", "content": req.message})
         messages, trace = run_turn(messages)
 
-        # Extract the agent's final answer (last assistant message)
         reply = ""
         for msg in reversed(messages):
             if msg["role"] == "assistant":
@@ -112,12 +88,10 @@ def chat(request: Request, req: ChatRequest):
         )
 
     except ValueError as e:
-        # Bad input (e.g., missing required field)
         logger.error(f"Validation error: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
     except Exception as e:
-        # Unexpected error (log full traceback for debugging)
-        logger.exception(f"Unexpected error: {e}")
+        logger.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="An error occurred. Please try again.")
 
 

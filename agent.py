@@ -35,26 +35,29 @@ if not API_KEY:
 
 client = Groq(api_key=API_KEY, timeout=API_TIMEOUT)
 
-SYSTEM_PROMPT = """You are an HR Assistant Agent for a fictional company, built on top of
-Workday-style employee data. You can look up employees, PTO balances, org
-structure, expense report status, and HR policy.
+SYSTEM_PROMPT = """You are an HR Assistant Agent for a fictional company. You help employees
+with HR questions using tools like looking up employee info, PTO balances, org
+structure, expense reports, and HR policies.
+
+Response style:
+- Answer naturally without markdown formatting (no **, --, ##, etc.)
+- Use simple text with line breaks for readability
+- For numeric data, just state it plainly: "You have 12 PTO days available"
+- For lists or structured data, use simple line-separated format, not markdown
+- Keep answers concise and directly from tool results
 
 Rules:
 - If the user refers to a person by name, use find_employee_by_name first to
   get their employee_id before calling other tools.
-- If a lookup returns an error or multiple candidates, ask the user to
-  clarify rather than guessing.
-- Keep answers concise and specific to the data returned by tools -- do not
-  invent numbers, statuses, or policy details that didn't come from a tool
-  or from the conversation.
+- If a lookup returns an error or multiple candidates, ask to clarify.
+- If a user identifies themselves in conversation (e.g., "I'm Om Shankar"),
+  remember that and use it for subsequent queries in the same conversation.
+- Never invent numbers or statuses — only use what tools return.
 """
 
 
 def call_tool(tool_name: str, tool_input: dict) -> dict:
-    """Execute a tool with error handling and logging.
-
-    Returns the tool result or an error dict with context.
-    """
+    """Execute a tool and return the result."""
     if tool_name not in TOOL_FUNCTIONS:
         msg = f"Unknown tool '{tool_name}'."
         logger.error(msg)
@@ -80,31 +83,20 @@ def call_tool(tool_name: str, tool_input: dict) -> dict:
 
 
 def run_turn(messages: list) -> tuple[list, list]:
-    """Core tool-calling loop: ask the model, execute tools, repeat until done.
-
-    The agent loop is:
-    1. Send conversation + tool schemas to model
-    2. Model returns either final answer OR tool call request
-    3. Execute the tool, feed result back to model
-    4. Repeat until model produces final answer
-
-    Returns (messages, trace) where trace is a list of {"name", "input", "result"}
-    dicts for each tool call (used by UI to show what the agent did).
-    """
+    """The core loop: ask model, execute tools it requests, repeat til we get an answer."""
 
     trace = []
     while True:
-        # Step 1: Ask the model (with available tools + conversation history)
+        # Ask the model (with tools available + full history)
         response = client.chat.completions.create(
             model=MODEL_NAME,
             max_tokens=1024,
-            tools=TOOL_DEFINITIONS,  # Tell model what tools are available
-            messages=messages,  # Full conversation history
+            tools=TOOL_DEFINITIONS,
+            messages=messages,
         )
         message = response.choices[0].message
 
-        # Step 2: Rebuild response as plain dict (avoid smuggling SDK-specific fields
-        # into the next request, which would cause API errors)
+        # Convert response to plain dict (SDK adds fields we don't want in next request)
         assistant_turn = {"role": "assistant", "content": message.content or ""}
         if message.tool_calls:
             assistant_turn["tool_calls"] = [
@@ -117,25 +109,23 @@ def run_turn(messages: list) -> tuple[list, list]:
             ]
         messages.append(assistant_turn)
 
-        # Step 3: If no tool calls, model has produced final answer — return
+        # No tools? We're done - model has its answer
         if not message.tool_calls:
             return messages, trace
 
-        # Step 4: Execute each tool the model requested
+        # Execute each tool
         for tc in message.tool_calls:
             try:
                 tool_input = json.loads(tc.function.arguments or "{}")
             except json.JSONDecodeError:
                 tool_input = None
-                result = {"error": f"Model sent malformed JSON arguments: {tc.function.arguments!r}"}
+                result = {"error": f"Bad JSON args: {tc.function.arguments!r}"}
             else:
                 result = call_tool(tc.function.name, tool_input)
 
-            # Record for UI (what tool was called, with what input, what was returned)
             trace.append({"name": tc.function.name, "input": tool_input, "result": result})
 
-            # Step 5: Feed tool result back to model (required by API)
-            # The tool_call_id ties result to the request
+            # Feed result back to model (by tool_call_id)
             messages.append(
                 {
                     "role": "tool",
@@ -143,64 +133,50 @@ def run_turn(messages: list) -> tuple[list, list]:
                     "content": json.dumps(result),
                 }
             )
-        # Loop back to Step 1: model can now use tool results to respond or call another tool
 
 
 def main():
-    """Interactive CLI for testing the agent directly.
+    """Interactive CLI - ask questions, get answers."""
+    print("HR Assistant Agent (remembers last 10 messages)\n")
 
-    This shows how the agent works:
-    1. Start with system prompt
-    2. User enters a question
-    3. Agent thinks, calls tools, returns answer
-    4. See the full trace of what it did
-    """
-    print("=" * 60)
-    print("HR Assistant Agent (CLI Mode)")
-    print("=" * 60)
-    print("\nTry these questions:")
-    print('  - "How much PTO does Priya have left?"')
-    print('  - "Who does Sofia Torres report to?"')
-    print('  - "Submit PTO for Sept 15-19"')
-    print('  - "What\'s the remote work policy?"')
-    print("\nType 'exit' or 'quit' to stop.\n")
+    # Keep conversation history (memory)
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    MAX_MEMORY = 10  # Keep last 10 messages
 
-    # Start with system prompt (no conversation memory between turns)
     while True:
+        # Get user input
         try:
-            user_input = input("You: ").strip()
+            question = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nGoodbye.")
             break
 
-        # Exit commands
-        if user_input.lower() in {"exit", "quit"}:
-            print("Goodbye.")
+        # Exit if user wants to quit
+        if question.lower() in {"exit", "quit"}:
             break
-        if not user_input:
+
+        # Skip empty input
+        if not question:
             continue
 
-        # Run the agent: fresh conversation each turn (stateless)
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        messages.append({"role": "user", "content": user_input})
+        # Add user message to history
+        messages.append({"role": "user", "content": question})
+
+        # Run agent with full conversation history
         messages, trace = run_turn(messages)
 
-        # Print agent's response
-        for msg in messages:
-            if msg["role"] == "assistant":
-                print(f"\nAgent: {msg['content']}\n")
-                break
+        # Get and print agent's answer
+        answer = messages[-1]["content"]
+        print(f"\nAgent: {answer}\n")
 
-        # Show what tools were called (trace)
+        # Show what tools were called
         if trace:
-            print(f"─ Tool calls ({len(trace)}):")
-            for i, call in enumerate(trace, 1):
-                print(f"  {i}. {call['name']}({call['input']})")
-                if "error" in call["result"]:
-                    print(f"     → Error: {call['result']['error']}")
-                else:
-                    print(f"     → {call['result']}")
-            print()
+            print(f"→ Used {len(trace)} tool(s)\n")
+
+        # Keep only last 10 messages + system prompt
+        # (prevents memory from growing too large)
+        if len(messages) > MAX_MEMORY + 1:
+            messages = [messages[0]] + messages[-(MAX_MEMORY):]
 
 
 if __name__ == "__main__":

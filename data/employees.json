@@ -85,5 +85,184 @@
     "manager_id": null,
     "pto_balance_days": 25.0,
     "expense_reports": []
+  },
+  {
+    "employee_id": "E1008",
+    "name": "Ananya Gupta",
+    "department": "Product",
+    "title": "Product Manager",
+    "manager_id": "E1007",
+    "pto_balance_days": 14.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2050",
+        "description": "Product summit attendance",
+        "amount": 1250.00,
+        "status": "Approved",
+        "submitted_on": "2026-08-20"
+      },
+      {
+        "report_id": "EXP-2051",
+        "description": "Lunch meeting with vendors",
+        "amount": 87.50,
+        "status": "Pending Manager Approval",
+        "submitted_on": "2026-09-05"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1009",
+    "name": "Chris Johnson",
+    "department": "Marketing",
+    "title": "Marketing Specialist",
+    "manager_id": "E1010",
+    "pto_balance_days": 11.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2052",
+        "description": "Campaign materials printing",
+        "amount": 450.00,
+        "status": "Approved",
+        "submitted_on": "2026-08-25"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1010",
+    "name": "Lisa Wang",
+    "department": "Marketing",
+    "title": "Marketing Manager",
+    "manager_id": "E1007",
+    "pto_balance_days": 19.5,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1011",
+    "name": "Michael Brown",
+    "department": "Engineering",
+    "title": "DevOps Engineer",
+    "manager_id": "E1005",
+    "pto_balance_days": 13.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2053",
+        "description": "AWS certification exam",
+        "amount": 300.00,
+        "status": "Approved",
+        "submitted_on": "2026-09-02"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1012",
+    "name": "Sarah Anderson",
+    "department": "HR",
+    "title": "HR Manager",
+    "manager_id": "E1007",
+    "pto_balance_days": 16.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1013",
+    "name": "Rajesh Patel",
+    "department": "Finance",
+    "title": "Senior Financial Analyst",
+    "manager_id": "E1006",
+    "pto_balance_days": 10.5,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2054",
+        "description": "Finance conference registration",
+        "amount": 1200.00,
+        "status": "Pending Manager Approval",
+        "submitted_on": "2026-09-03"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1014",
+    "name": "Emma Davis",
+    "department": "Sales",
+    "title": "Sales Representative",
+    "manager_id": "E1006",
+    "pto_balance_days": 7.5,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2055",
+        "description": "Client entertainment",
+        "amount": 215.75,
+        "status": "Approved",
+        "submitted_on": "2026-08-30"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1015",
+    "name": "David Martinez",
+    "department": "Engineering",
+    "title": "QA Engineer",
+    "manager_id": "E1005",
+    "pto_balance_days": 12.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1016",
+    "name": "Jessica Thompson",
+    "department": "Product",
+    "title": "Product Designer",
+    "manager_id": "E1008",
+    "pto_balance_days": 8.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2056",
+        "description": "Design tool licenses",
+        "amount": 599.00,
+        "status": "Approved",
+        "submitted_on": "2026-08-18"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1017",
+    "name": "Kevin O'Brien",
+    "department": "Sales",
+    "title": "Sales Director",
+    "manager_id": "E1007",
+    "pto_balance_days": 22.0,
+    "expense_reports": []
+  },
+  {
+    "employee_id": "E1018",
+    "name": "Nina Okonkwo",
+    "department": "Engineering",
+    "title": "Backend Engineer",
+    "manager_id": "E1005",
+    "pto_balance_days": 14.5,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2057",
+        "description": "Tech conference travel",
+        "amount": 1500.00,
+        "status": "Approved",
+        "submitted_on": "2026-09-01"
+      }
+    ]
+  },
+  {
+    "employee_id": "E1019",
+    "name": "Om Shankar Rajput",
+    "department": "Engineering",
+    "title": "Software Engineer",
+    "manager_id": "E1005",
+    "pto_balance_days": 16.0,
+    "expense_reports": [
+      {
+        "report_id": "EXP-2058",
+        "description": "AI/ML conference registration",
+        "amount": 850.00,
+        "status": "Approved",
+        "submitted_on": "2026-08-22"
+      }
+    ]
   }
 ]

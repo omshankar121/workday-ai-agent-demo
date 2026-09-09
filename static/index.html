@@ -444,6 +444,11 @@
     <p>Your intelligent HR companion</p>
   </header>
 
+  <div style="padding: 16px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); display: flex; gap: 8px; align-items: center;">
+    <label for="name-input" style="font-weight: 500; color: var(--gray-700);">Your name:</label>
+    <input type="text" id="name-input" placeholder="E.g., Priya, Om, Sofia" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 14px; flex: 1;">
+  </div>
+
   <div class="suggestions">
     <button class="suggestion-btn">📅 PTO Balance</button>
     <button class="suggestion-btn">👥 Org Structure</button>
@@ -478,20 +483,29 @@ const sendEl = document.getElementById("send");
 const suggestionBtns = document.querySelectorAll(".suggestion-btn");
 
 let hasConversation = false;
+const nameInput = document.getElementById("name-input");
 
-const suggestions = {
-  "📅 PTO Balance": "How much PTO do I have left?",
-  "👥 Org Structure": "Who is my manager and who reports to me?",
-  "💰 Expenses": "What's the status of my recent expense reports?",
+const suggestionTemplates = {
+  "📅 PTO Balance": (name) => `My name is ${name}. How much PTO do I have left?`,
+  "👥 Org Structure": (name) => `I'm ${name}. Who is my manager and who reports to me?`,
+  "💰 Expenses": (name) => `I'm ${name}. What's the status of my recent expense reports?`,
   "📋 HR Policy": "What's the remote work policy?",
-  "✈️ Submit PTO": "I'm Priya and I want to submit PTO from September 15 to 19",
-  "📤 Submit Expense": "Submit a $500 conference expense for me",
-  "📞 Update Contact": "Update my phone number to +1-555-0100"
+  "✈️ Submit PTO": (name) => `I'm ${name} and I want to submit PTO from September 15 to 19`,
+  "📤 Submit Expense": (name) => `I'm ${name}. Submit a $500 conference expense for me`,
+  "📞 Update Contact": (name) => `I'm ${name}. Update my phone number to +1-555-0100`
 };
 
 suggestionBtns.forEach(btn => {
   btn.addEventListener("click", () => {
-    const query = suggestions[btn.textContent];
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert("Please enter your name first");
+      nameInput.focus();
+      return;
+    }
+
+    const template = suggestionTemplates[btn.textContent];
+    const query = typeof template === "function" ? template(name) : template;
     if (query) {
       inputEl.value = query;
       send();
