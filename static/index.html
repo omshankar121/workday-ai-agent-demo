@@ -336,6 +336,25 @@
     align-items: center;
   }
 
+  .credit-bar {
+    text-align: center;
+    padding: 10px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    font-size: 12px;
+    color: var(--gray-700);
+  }
+
+  .credit-bar a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .credit-bar a:hover {
+    text-decoration: underline;
+  }
+
   #input {
     flex: 1;
     padding: 11px 14px;
@@ -441,7 +460,7 @@
 <div class="app">
   <header>
     <h1>🚀 Workday AI HR Assistant (OS)</h1>
-    <p>Your intelligent HR companion</p>
+    <p>Agentic AI for HR · Built by Om Shankar Rajput</p>
   </header>
 
   <div class="suggestions">
@@ -468,6 +487,14 @@
       <button id="send">Send</button>
     </div>
   </footer>
+
+  <div class="credit-bar">
+    Built by <strong>Om Shankar Rajput</strong>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/omshankar121/workday-ai-agent-demo" target="_blank" rel="noopener">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://www.linkedin.com/in/om-shankar-rajput-5982a1119/" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.min.js"></script>
