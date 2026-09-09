@@ -63,6 +63,27 @@ async def rate_limit_handler(request, exc):
     )
 
 
+def trim_history(messages: list, max_messages: int = 10) -> list:
+    """Trim conversation history to bound memory growth.
+
+    Only cuts at a 'user' message. A tool call spans several messages
+    (assistant with tool_calls, then the tool result), and the API rejects a
+    tool message whose parent assistant message has been trimmed away.
+    """
+    system_prompt, history = messages[0], messages[1:]
+
+    if len(history) <= max_messages:
+        return messages
+
+    window = history[-max_messages:]
+    for i, msg in enumerate(window):
+        if msg["role"] == "user":
+            return [system_prompt] + window[i:]
+
+    # No user message in the window — drop history rather than send orphans
+    return [system_prompt]
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 @limiter.limit(RATE_LIMIT)
 def chat(request: Request, req: ChatRequest):
@@ -81,10 +102,7 @@ def chat(request: Request, req: ChatRequest):
         messages.append({"role": "user", "content": req.message})
         messages, trace = run_turn(messages)
 
-        # Keep only last 10 messages + system prompt (prevent memory bloat)
-        if len(messages) > 11:
-            messages = [messages[0]] + messages[-10:]
-        sessions[session_id] = messages
+        sessions[session_id] = trim_history(messages)
 
         # Extract agent's reply
         reply = ""
