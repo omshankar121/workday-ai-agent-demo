@@ -2,11 +2,11 @@
 
 ## Why I built this
 
-Real Workday API requires an enterprise license. Most AI projects use frameworks like LangChain, which automate tool calling but hide the actual mechanics. I wanted to understand **how tool calling actually works** — and build it explicitly so it's debuggable and customizable.
+Real Workday API requires an enterprise license. Most AI projects use frameworks like LangChain, which automate tool calling but hide the actual mechanics. I wanted to understand **how tool calling actually works**, so I built the loop explicitly by hand first (`agent.py`), then rebuilt the same agent with LangChain (`agent_langchain.py`) to compare what the framework buys you.
 
 ## Architecture decisions
 
-### 1. Explicit tool-calling loop (not LangChain)
+### 1. Explicit tool-calling loop, built by hand first
 
 **The loop:**
 1. Send conversation + tool schemas to model
