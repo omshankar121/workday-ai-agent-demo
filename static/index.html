@@ -483,6 +483,7 @@ const sendEl = document.getElementById("send");
 const suggestionBtns = document.querySelectorAll(".suggestion-btn");
 
 let hasConversation = false;
+let sessionId = null;
 const nameInput = document.getElementById("name-input");
 
 const suggestionTemplates = {
@@ -648,7 +649,7 @@ async function send() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text }),
+      body: JSON.stringify({ message: text, session_id: sessionId }),
     });
 
     if (!res.ok) {
@@ -658,6 +659,7 @@ async function send() {
     }
 
     const data = await res.json();
+    sessionId = data.session_id;
     removeTyping();
     const messageGroup = addMessage("agent", data.reply);
     addTrace(messageGroup, data.trace);

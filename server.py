@@ -38,6 +38,10 @@ app.add_middleware(
 
 logger.info(f"Rate limit: {RATE_LIMIT}")
 
+# Session memory: stores conversation history by session_id
+# (keeps last 10 messages to avoid memory bloat)
+sessions = {}
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -62,16 +66,27 @@ async def rate_limit_handler(request, exc):
 @app.post("/api/chat", response_model=ChatResponse)
 @limiter.limit(RATE_LIMIT)
 def chat(request: Request, req: ChatRequest):
-    """Process a chat message through the agent."""
+    """Process a chat message through the agent with session memory."""
     try:
         session_id = req.session_id or str(uuid.uuid4())
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
+        # Get or create session with system prompt
+        if session_id not in sessions:
+            sessions[session_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+        messages = sessions[session_id]
         logger.info(f"[{session_id}] User: {req.message[:50]}...")
 
+        # Add user message and run agent with full conversation history
         messages.append({"role": "user", "content": req.message})
         messages, trace = run_turn(messages)
 
+        # Keep only last 10 messages + system prompt (prevent memory bloat)
+        if len(messages) > 11:
+            messages = [messages[0]] + messages[-10:]
+        sessions[session_id] = messages
+
+        # Extract agent's reply
         reply = ""
         for msg in reversed(messages):
             if msg["role"] == "assistant":
