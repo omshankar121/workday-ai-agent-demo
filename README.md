@@ -1,6 +1,8 @@
-# HR Assistant Agent — AI Tool Calling Demo
+# Agentic HR Assistant — Workday-Style AI Tool Calling Demo
 
-A lightweight AI agent that answers HR questions using **explicit tool calling** — built in pure Python with **no frameworks** (no LangChain). Demonstrates a professional agentic loop pattern with a FastAPI web UI.
+**🔗 Live demo: [agentic-hr-assistant.up.railway.app](https://agentic-hr-assistant.up.railway.app)**
+
+An agentic AI assistant that handles Workday-style HR tasks — PTO, org lookups, expenses, policy search — using autonomous tool calling. Built two ways: an explicit hand-written loop (`agent.py`) and a LangChain implementation (`agent_langchain.py`), so you can compare both approaches side by side.
 
 ## Features
 
@@ -34,11 +36,13 @@ python -m uvicorn server:app --reload
 
 ## How it works
 
-**agent.py** (130 lines):
+**agent.py** — explicit loop:
 1. Send conversation + tool schemas to Groq API
 2. Model returns either a final answer or a tool call request
 3. Execute the tool, feed result back to model
 4. Repeat until done
+
+**agent_langchain.py** — same logic, built with LangChain's `create_agent` (LangGraph under the hood) instead of a hand-written loop. Compare the two to see what the framework buys you vs. what it hides.
 
 **server.py** (123 lines):
 - FastAPI endpoint wrapping `agent.py`'s loop
@@ -70,26 +74,33 @@ python -m uvicorn server:app --reload
 - "Submit PTO for Sept 15-19"
 - "What's the remote work policy?"
 
-## Why build the loop by hand?
+## Why two implementations?
 
-LangChain/LlamaIndex handle tool calling, but obscure how it works. For an **explainable, maintainable agent**, writing the loop explicitly is better:
+LangChain/LangGraph handle tool calling for you, but obscure how it works under the hood. Building the loop by hand first, then re-implementing it with LangChain, makes the tradeoff concrete instead of theoretical:
 
+**Explicit loop (`agent.py`)**
 - ✅ Full visibility into prompt → tools → result → response
 - ✅ Trivial to debug (print anywhere)
 - ✅ No dependency lock-in
-- ✅ Easy to add custom logic (retries, filtering, validation)
 
-Perfect for learning or production systems where you own the requirements.
+**LangChain (`agent_langchain.py`)**
+- ✅ Less code to maintain
+- ✅ Built-in patterns for more complex agent graphs later
+- ⚠️ More abstraction between you and what's actually happening
 
 ## Project structure
 
 ```
-agent.py         # Core tool-calling loop
-server.py        # FastAPI wrapper
-tools.py         # Tool definitions + dispatch
-workday_api.py   # "Workday API" (mock data)
-static/          # Web UI
+agent.py              # Explicit tool-calling loop
+agent_langchain.py    # Same agent, built with LangChain's create_agent
+server.py             # FastAPI wrapper (used by both agent versions)
+tools.py              # Tool definitions + dispatch (OpenAI format)
+tools_langchain.py    # Tool definitions (LangChain @tool format)
+workday_api.py        # "Workday API" (mock data, OAuth-ready for real API)
+data/                 # Mock employee records + HR policy handbook
+static/               # Web UI
 requirements.txt
+Procfile              # Railway deployment config
 .env.example
 .gitignore
 ```
