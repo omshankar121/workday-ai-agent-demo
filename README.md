@@ -1,8 +1,8 @@
-# Agentic HR Assistant — Workday-Style AI Tool Calling Demo
+# Agentic HR Assistant - Workday-Style AI Tool Calling Demo
 
 **🔗 Live demo: [agentic-hr-assistant.up.railway.app](https://agentic-hr-assistant.up.railway.app)**
 
-An agentic AI assistant that handles Workday-style HR tasks — PTO, org lookups, expenses, policy search — using autonomous tool calling. Built two ways: an explicit hand-written loop (`agent.py`) and a LangChain implementation (`agent_langchain.py`), so you can compare both approaches side by side.
+An agentic AI assistant that handles Workday-style HR tasks - PTO, org lookups, expenses, policy search - using autonomous tool calling. Built two ways: an explicit hand-written loop (`agent.py`) and a LangChain implementation (`agent_langchain.py`), so you can compare both approaches side by side.
 
 ## Features
 
@@ -11,7 +11,7 @@ An agentic AI assistant that handles Workday-style HR tasks — PTO, org lookups
 - **Tool calling loop:** Explicit, visible implementation (no magic)
 - **Web UI:** FastAPI + browser chat with markdown rendering & tool traces
 - **Rate limiting:** Production-grade request protection
-- **Clean code:** ~130 lines for the core agent — easy to understand & extend
+- **Clean code:** ~130 lines for the core agent - easy to understand & extend
 
 ## Quick Start
 
@@ -36,13 +36,13 @@ python -m uvicorn server:app --reload
 
 ## How it works
 
-**agent.py** — explicit loop:
+**agent.py** - explicit loop:
 1. Send conversation + tool schemas to Groq API
 2. Model returns either a final answer or a tool call request
 3. Execute the tool, feed result back to model
 4. Repeat until done
 
-**agent_langchain.py** — same logic, built with LangChain's `create_agent` (LangGraph under the hood) instead of a hand-written loop. Compare the two to see what the framework buys you vs. what it hides.
+**agent_langchain.py** - same logic, built with LangChain's `create_agent` (LangGraph under the hood) instead of a hand-written loop. Compare the two to see what the framework buys you vs. what it hides.
 
 **server.py** (123 lines):
 - FastAPI endpoint wrapping `agent.py`'s loop
@@ -111,13 +111,13 @@ Procfile              # Railway deployment config
 A: LangChain automates the tool-calling loop but hides how it works. I wanted to understand the mechanism, so I built it explicitly (130 lines). This makes it debuggable and customizable. You can see exactly what happens at each step.
 
 **Q: Why mock Workday API instead of real one?**
-A: Real Workday API requires enterprise license + OAuth setup + sandbox access. Mock data shows the architecture without bureaucracy. **The architecture is identical** — to swap in real API, just change `workday_api.py`'s internals. The agent loop doesn't care.
+A: Real Workday API requires enterprise license + OAuth setup + sandbox access. Mock data shows the architecture without bureaucracy. **The architecture is identical** - to swap in real API, just change `workday_api.py`'s internals. The agent loop doesn't care.
 
 **Q: Why FastAPI for the server?**
-A: HTTP is a detail. FastAPI handles it well (rate limiting, CORS, error codes, validation) so I can focus on the agent logic. The agent itself is completely separate and framework-agnostic — could run in Flask, Django, Discord, a job queue, anywhere.
+A: HTTP is a detail. FastAPI handles it well (rate limiting, CORS, error codes, validation) so I can focus on the agent logic. The agent itself is completely separate and framework-agnostic - could run in Flask, Django, Discord, a job queue, anywhere.
 
 **Q: Why no database persistence?**
-A: Portfolio project should be readable in 5 minutes. Each request is independent (stateless). In production, you'd add persistence with Redis/PostgreSQL in server.py — but the agent loop wouldn't change at all.
+A: Portfolio project should be readable in 5 minutes. Each request is independent (stateless). In production, you'd add persistence with Redis/PostgreSQL in server.py - but the agent loop wouldn't change at all.
 
 **Q: Why simplified codebase (no streaming, no retries)?**
 A: **Simple ≠ incomplete.** The core concept is fully visible. Streaming (Server-Sent Events) and retries (exponential backoff) are nice optimizations but obscure the main idea. Can add them later in 30 minutes.
