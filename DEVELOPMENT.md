@@ -33,7 +33,7 @@ The agent loop (`agent.py`) is framework-agnostic. It could run:
 - In a job queue
 - Anywhere
 
-This is intentional — the agent doesn't care **how** it gets messages or **where** it sends responses.
+This is intentional - the agent doesn't care **how** it gets messages or **where** it sends responses.
 
 ### 3. FastAPI for the server (not building from scratch)
 
@@ -119,12 +119,12 @@ Decision: Correct for a stateless demo.
 
 ## What makes this production-ready (without being bloated)
 
-✅ **Error handling** — Try/except with logging, HTTP error codes
-✅ **Rate limiting** — Prevents abuse
-✅ **Logging** — Debug-friendly output
-✅ **Tool validation** — Each tool has error handling
-✅ **Code organization** — Clear separation of concerns
-✅ **No magic** — Explicit is better than implicit
+✅ **Error handling** - Try/except with logging, HTTP error codes
+✅ **Rate limiting** - Prevents abuse
+✅ **Logging** - Debug-friendly output
+✅ **Tool validation** - Each tool has error handling
+✅ **Code organization** - Clear separation of concerns
+✅ **No magic** - Explicit is better than implicit
 
 What's NOT in here (but would be in production):
 - ❌ Authentication (would be added to server.py)
@@ -134,12 +134,12 @@ What's NOT in here (but would be in production):
 
 ## What I'd add next (if continuing)
 
-1. **True streaming** — Server-Sent Events for word-by-word responses
-2. **Real Workday API** — Swap workday_api.py for real HTTP calls
-3. **Conversation persistence** — Redis + sessions
-4. **User authentication** — OAuth2 + session management
-5. **Analytics** — Track tool usage, error rates, response times
-6. **Tests** — Unit tests for tools, integration tests for agent
+1. **True streaming** - Server-Sent Events for word-by-word responses
+2. **Real Workday API** - Swap workday_api.py for real HTTP calls
+3. **Conversation persistence** - Redis + sessions
+4. **User authentication** - OAuth2 + session management
+5. **Analytics** - Track tool usage, error rates, response times
+6. **Tests** - Unit tests for tools, integration tests for agent
 
 But for a portfolio project: **done**. The core concept is visible and the architecture is sound.
 
